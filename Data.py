@@ -4,7 +4,8 @@
 import numpy as np
 import pandas as pd
 
-class Airbnb_Dataset():
+
+class AirbnbDataset():
     def __init__(self):
         self.us_state_city_mapper = {"North Carolina":["Asheville"],
                             "Texas":["Austin"],
@@ -17,7 +18,7 @@ class Airbnb_Dataset():
                             "Hawaii":["Hawaii"],
                             "New Jersey":["Jersey City"],
                             "California":["Los Angeles","Oakland","Pacific Grove","San Diego",
-                                          "San Francisco","San Mateo County","Santa Clara County","Santa Cruz"],
+                                          "San Francisco","San Mateo County","Santa Clara County","Santa Cruz County"],
                             "Tennessee":["Nashville"],
                             "Louisiana":["New Orleans"],
                             "New York":["New York City"],
@@ -29,7 +30,7 @@ class Airbnb_Dataset():
         self.us_states = list(self.us_state_city_mapper.keys())
         self.us_cities = []
         for key in self.us_states:
-            self.us_cities.append(self.us_state_city_mapper[key])
+            self.us_cities.extend(self.us_state_city_mapper[key])
 
     ################## United States Related functions ################
     def get_num_us_states(self):
@@ -48,20 +49,24 @@ class Airbnb_Dataset():
 
 
     ################## General functions ################
-    def get_reviews_per_month_for_city(self, city):
-        """
-        Get historical total reviews per month for the city specified. All months with data available will be returned.
 
-        Assumed that occupancy rate is proportional to the revierws per month. The result returned by this function would
+    def get_reviews_for_city(self, city, per_month = True, per_week = False):
+        """
+        Get historical total reviews per month(week) for the city specified. All months(weeks) with data available will be returned.
+
+        Assumed that occupancy rate is proportional to the revierws per month(week). The result returned by this function would
         indicate the Airbnb activity for this city.
         :param city: string
         :return: pd.dataframe, size = number of months * 3
         """
         assert isinstance(city, str)
+        assert not (per_month and per_week)
+        assert per_month or per_week
+
         if city in self.us_cities:
-            print("This is a US city.")
+            print(f"{city} is a US city.")
         else:
-            print("This is not a US city")
+            print(f"{city} is not a US city")
 
         df = pd.read_csv(f"Data/{city}/reviews.csv")
         if "listing_id" in df.columns and "date" in df.columns and df.shape[1] == 2:
@@ -73,40 +78,46 @@ class Airbnb_Dataset():
         df.date = pd.to_datetime(df.date)
         df['month'] = df.date.dt.month
         df['year'] = df.date.dt.year
+        df['week'] = df.date.dt.isocalendar().week
 
-        num_reviews_per_month = df.groupby(['year', 'month']).size().reset_index()
+        if per_month:
+            num_reviews = df.groupby(['year', 'month']).size().to_frame('size')
+        else:
+            num_reviews = df.groupby(['year', 'week']).size().to_frame('size')
 
-        return num_reviews_per_month
+        return num_reviews
 
-    def get_reviews_per_month_for_us_state(self, state):
+    def get_reviews_for_us_state(self, state, per_month=True, per_week=False):
         """
-        Get historical reviews per month for the United States specified.
+        Get historical reviews per month(week) for the United States specified.
 
         Simply use the get_total_reviews_per_month_for_cities() function.
-        :param state: string
-        :return: pd.dataframe, size = number of months * 3
         """
         assert isinstance(state, str) and state in self.us_states
-        return self.get_total_reviews_per_month_for_cities(self.us_state_city_mapper[state])
+        assert not (per_month and per_week)
+        assert per_month or per_week
 
-    def get_total_reviews_per_month_for_cities(self, cities):
+        return self.get_total_reviews_for_cities(self.us_state_city_mapper[state], per_month, per_week)
+
+    def get_total_reviews_for_cities(self, cities, per_month=True, per_week=False):
         """
-        Get total historical reviews per month for the cities specified. All months with date available (for all cities in this state) will be returned.
+        Get total historical reviews per month(week) for the cities specified. All months with date available (for all cities in this state) will be returned.
         Value is computed by summing all cities reviews in this state.
-
-        :param cities: list of strings
-        :return: pd.dataframe, size = number of months * 3
         """
         assert isinstance(cities, list) and len(cities) >= 1 and isinstance(cities[0], str)
+        assert not (per_month and per_week)
+        assert per_month or per_week
 
-        num_reviews_per_month = self.get_reviews_per_month_for_city(cities[0])
+        num_reviews = self.get_reviews_for_city(cities[0], per_month, per_week)
         for city in cities[1:]:
-            df = self.get_reviews_per_month_for_city(city)
-            num_reviews_per_month = pd.merge(num_reviews_per_month, df, on=["year", "month"])
-            num_reviews_per_month["0_x"] = num_reviews_per_month["0_x"] + num_reviews_per_month["0_y"]
-            num_reviews_per_month = num_reviews_per_month.drop('0_y', axis=1)
+            df = self.get_reviews_for_city(city, per_month, per_week)
+            num_reviews = pd.merge(num_reviews, df, on=["year", "month"]) if per_month else pd.merge(num_reviews, df, on=["year", "week"])
+            num_reviews["size"] = num_reviews["size_x"] + num_reviews["size_y"]
+            num_reviews = num_reviews.drop(['size_y', "size_x"], axis=1)
 
-        return num_reviews_per_month
+        return num_reviews
+
+
 
 
 
