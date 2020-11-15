@@ -2,4 +2,5 @@
 ECE 143 project in UCSD. 
 
 ## Data loader
-Please check the User Manual.ipny
+Please check the Data User Manual.ipynb for details.
+
