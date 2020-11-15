@@ -7,6 +7,7 @@ import pandas as pd
 
 class AirbnbDataset():
     def __init__(self):
+        # us related class attributes
         self.us_state_city_mapper = {"North Carolina":["Asheville"],
                             "Texas":["Austin"],
                             "Massachusetts":["Boston","Cambridge"],
@@ -32,7 +33,28 @@ class AirbnbDataset():
         for key in self.us_states:
             self.us_cities.extend(self.us_state_city_mapper[key])
 
-    ################## United States Related functions ################
+        # all countries related class attributes
+        self.country_to_city_map = {"Germany": "Munich",
+                                   "Spain": "Madrid",
+                                   "Greece": "Athens",
+                                   "Sweden": "Stockholm",
+                                   "United Kingdom": "Edinburgh",
+                                   "China": "Shanghai",
+                                   "Singapore": "Singapore",
+                                   "Japan": "Tokyo",
+                                   "South Africa": "Cape Town",
+                                   "Australia": "Sydney",
+                                   "Canada": "Ottawa",
+                                   "United States": "Washington D.C.",
+                                   "Mexico": "Mexico City",
+                                   "Brazil": "Rio de Janeiro",
+                                   "Argentina": "Buenos Aires"}
+        self.countries = list(self.country_to_city_map.keys())
+        self.global_cities = [self.country_to_city_map[_] for _ in self.countries]
+        self.city_to_country_map = dict(zip(self.global_cities, self.countries))
+
+
+    ################## helper functions ################
     def get_num_us_states(self):
         """
         Get number of us states where data is available
@@ -40,16 +62,15 @@ class AirbnbDataset():
         """
         return len(self.us_state_city_mapper.keys())
 
-    def get_us_states(self):
+    def get_num_countries(self):
         """
-        Get list of us states where data is available
-        :return: list of strings
+        Get number of countries where data is available
+        :return: int
         """
-        return list(self.us_state_city_mapper.keys())
+        return len(self.countries)
 
 
     ################## General functions ################
-
     def get_reviews_for_city(self, city, per_month = True, per_week = False):
         """
         Get historical total reviews per month(week) for the city specified. All months(weeks) with data available will be returned.
@@ -64,9 +85,12 @@ class AirbnbDataset():
         assert per_month or per_week
 
         if city in self.us_cities:
-            print(f"{city} is a US city.")
+            print(f"City {city} is in country United States .")
+        elif city in self.global_cities:
+            print(f"City {city} is in country {self.city_to_country_map[city]}")
         else:
-            print(f"{city} is not a US city")
+            print(f"City {city}'s data is not available. Please double check.")
+            return None
 
         df = pd.read_csv(f"Data/{city}/reviews.csv")
         if "listing_id" in df.columns and "date" in df.columns and df.shape[1] == 2:
@@ -87,18 +111,6 @@ class AirbnbDataset():
 
         return num_reviews
 
-    def get_reviews_for_us_state(self, state, per_month=True, per_week=False):
-        """
-        Get historical reviews per month(week) for the United States specified.
-
-        Simply use the get_total_reviews_per_month_for_cities() function.
-        """
-        assert isinstance(state, str) and state in self.us_states
-        assert not (per_month and per_week)
-        assert per_month or per_week
-
-        return self.get_total_reviews_for_cities(self.us_state_city_mapper[state], per_month, per_week)
-
     def get_total_reviews_for_cities(self, cities, per_month=True, per_week=False):
         """
         Get total historical reviews per month(week) for the cities specified. All months with date available (for all cities in this state) will be returned.
@@ -116,6 +128,28 @@ class AirbnbDataset():
             num_reviews = num_reviews.drop(['size_y', "size_x"], axis=1)
 
         return num_reviews
+
+    def get_reviews_for_us_state(self, state, per_month=True, per_week=False):
+        """
+        Get historical reviews per month(week) for the United States specified.
+
+        Simply use the get_total_reviews_per_month_for_cities() function.
+        """
+        assert isinstance(state, str) and state in self.us_states
+        assert not (per_month and per_week)
+        assert per_month or per_week
+
+        return self.get_total_reviews_for_cities(self.us_state_city_mapper[state], per_month, per_week)
+
+    def get_reviews_for_country(self, country, per_month=True, per_week=False):
+        """
+        Get historical reviews per month(week) for the country. The representative city's data will be returned.
+        """
+        assert isinstance(country, str) and country in self.countries
+        assert not (per_month and per_week)
+        assert per_month or per_week
+
+        return self.get_reviews_for_city(self.country_to_city_map[country], per_month, per_week)
 
 
 
