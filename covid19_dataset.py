@@ -1,49 +1,63 @@
 # Created by Haoyuan Cao, Nov 6 2020
 # Modified by Apoorva Gokhale, Nov 25 2020
 # This script is used as data loader the COVID dataset.
+import numpy as np
+import pandas as pd
 
-class CovidDataset:
+import config_data
+
+class COVID19Dataset:
     def __init__(self):
-        self.wordwide = pd.read_csv("CovidData/worldwide_history.csv").filter(items=["continent","location",'date','total_cases',
+        self.worldwide = pd.read_csv(config_data.COVID19_COUNTRY_PATH).filter(items=["continent","location",'date','total_cases',
                                                                            'new_cases','total_deaths','new_deaths'])
-        self.statelevel = pd.read_csv("CovidData/us_all_states_history.csv").filter(items=['date','state','death','deathIncrease',
+        self.statelevel = pd.read_csv(config_data.COVID19_STATE_PATH).filter(items=['date','state','death','deathIncrease',
                                                                                  'positive', 'positiveIncrease',
                                                                                  'totalTestResults', 'totalTestResultsIncrease'])
-        self.citylevel = pd.read_csv("CovidData/california_statewide_cases.csv")
-
-        # rename columns, with names death, death_increase, total_cases, new_cases, total_test_results(if available), total_test_results_increase(if available)
-        self.wordwide = self.wordwide.rename(columns={'total_deaths':'death', 'new_deaths':'death_increase',
+        self.citylevel = pd.read_csv(config_data.COVID19_CITY_PATH)
+        
+        self.rename_columns()
+        self.convert_datetime()
+        
+        print("All data loaded and preprocessed.")
+    
+    def rename_columns(self):
+        """
+        Rename columns, with names death, death_increase, total_cases, new_cases, 
+        total_test_results(if available), total_test_results_increase(if available)
+        """
+        self.worldwide = self.worldwide.rename(columns={'total_deaths':'death', 'new_deaths':'death_increase',
                                               'total_cases':'total_cases', 'new_cases':'new_cases'})
         self.statelevel = self.statelevel.rename(columns={'death':'death', 'deathIncrease':'death_increase',
                                                   'positive':'total_cases', 'positiveIncrease':'new_cases',
                                                   'totalTestResults':'total_test_results', 'totalTestResultsIncrease':'total_test_results_increase'})
         self.citylevel = self.citylevel.rename(columns={'totalcountdeaths':'death', 'newcountdeaths':'death_increase',
-                                                'totalcountconfirmed':'total_cases', 'newcountconfirmed':'new_cases'})
-
-        # change all date column to pd.datetime
-        self.wordwide.date = pd.to_datetime(self.wordwide.date)
+                                                'totalcountconfirmed':'total_cases', 'newcountconfirmed':'new_cases'})        
+    
+    def convert_datetime(self):
+        """
+        Change all date column to pd.datetime
+        """
+        self.worldwide.date = pd.to_datetime(self.worldwide.date)
         self.statelevel.date = pd.to_datetime(self.statelevel.date)
         self.citylevel.date = pd.to_datetime(self.citylevel.date)
-
-        print("All data loaded and preprocessed.")
-
+        
     def get_available_countries(self):
         """
         Get a set of countries where data is available.
         """
-        return set(self.wordwide.location.unique())
+        return set(self.worldwide.location.unique())
 
-    def get_data_wordwide(self):
+    def get_data_worldwide(self):
         """
-        Get the wordwide data in one data frame
+        Get the worldwide data in one data frame
         """
-        return self.wordwide
+        return self.worldwide
 
     def get_data_statelevel(self):
         """
         Get all us states' data in one data frame
         """
-        return self.wordwide
+        return self.worldwide
 
     def get_data_citylevel(self):
         """
@@ -58,8 +72,8 @@ class CovidDataset:
         assert isinstance(country, str)
         assert (per_day and not per_week) or (per_week and not per_day)
 
-        is_country = self.wordwide.location == country
-        df_country = self.wordwide[is_country].copy().reset_index(drop=True)  # deep copy
+        is_country = self.worldwide.location == country
+        df_country = self.worldwide[is_country].copy().reset_index(drop=True)  # deep copy
         if per_day:
             return df_country.set_index('date')
         else:
@@ -98,7 +112,6 @@ class CovidDataset:
             df_city['year'] = df_city.date.dt.year
             df_city['week'] = df_city.date.dt.isocalendar().week
             return df_city.groupby(['year', 'week']).sum()
-
 
 
 
