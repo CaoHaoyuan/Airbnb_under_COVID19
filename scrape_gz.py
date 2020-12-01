@@ -43,31 +43,39 @@ for link in get_soup(URL).find_all('a'):
             fname += (part+'-')
         for part in fname_parts[:3]:
             dirname += (part+'-')
-        fname = fname[:-1] + extension
+        fname = fname[:-1]
+        fname_ext = fname + extension
         dirname = os.path.join(TARGET_DIR, dirname[:-1])
-        
         if not os.path.isdir(dirname):
             os.makedirs(dirname)
-        with open(os.path.join(dirname,fname), 'wb') as file:
+        if os.path.isfile(os.path.join(dirname,fname+'.csv')):
+            #the filtered file exists, skip this iteration completely and move to next file
+            print(f"Skipped {os.path.join(dirname,fname)}.csv. It already exists")
+            continue
+        #download the large file
+        with open(os.path.join(dirname,fname_ext), 'wb') as file:
             response = requests.get(file_link)
             file.write(response.content)
-            
-        print(f"downloaded: {os.path.join(dirname,fname)}")
-        
+            print(f"downloaded: {os.path.join(dirname,fname_ext)}")
         df = []
-        new_fname = fname
+        new_fname = fname_ext + ''
         if ".gz" in extension:
-            df = pd.read_csv(os.path.join(dirname,fname), compression="gzip", index_col=0)
-            new_fname = fname[:fname.find(".gz")]
+            df = pd.read_csv(os.path.join(dirname,fname_ext), compression="gzip", index_col=0)
+            new_fname = new_fname[:new_fname.find(".gz")]
         else:
-            df = pd.read_csv(os.path.join(dirname,fname),index_col=0)
+            df = pd.read_csv(os.path.join(dirname,fname_ext),index_col=0)
             
-        #delete the large file to allow for saving the 
-        if os.path.exists(os.path.join(dirname,fname)):
-            os.remove(os.path.join(dirname,fname))
-        #select the columns of interest
-        df = df[COLUMNS_OF_INTEREST]
+        #delete the large file to allow for saving the filtered one at the same location
+        if os.path.exists(os.path.join(dirname,fname_ext)):
+            os.remove(os.path.join(dirname,fname_ext))
+        #select the columns of interest that are actually in the CSV columns
+        cols = []
+        #handle missing columns
+        for c in COLUMNS_OF_INTEREST:
+            if c in df.columns:
+                cols.append(c)
+        df = df[cols]
         #write out the df with columns of interest as .CSV to same location with same name
         df.to_csv(os.path.join(dirname,new_fname))
-        break
+        print(f"Filtered CSV written out to {os.path.join(dirname,new_fname)}")
         
