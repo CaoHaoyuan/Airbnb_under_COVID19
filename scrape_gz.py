@@ -11,9 +11,10 @@ from bs4 import BeautifulSoup as bs
 import requests
 import os
 import pandas as pd
-
+import time
+import config_data
 #where the filtered CSV files will be stored
-TARGET_DIR = './Airbnb_Listings_Gz'	
+TARGET_DIR = config_data.AIRBNB_LISTINGS_DATA_DIR	
 
 if not os.path.isdir(TARGET_DIR):
     os.makedirs(TARGET_DIR)
@@ -54,16 +55,28 @@ for link in get_soup(URL).find_all('a'):
             continue
         #download the large file
         with open(os.path.join(dirname,fname_ext), 'wb') as file:
-            response = requests.get(file_link)
+            while True:
+                try:
+                    print("trying to establish a connection with the source..")
+                    response = requests.get(file_link)
+                    break
+                except:
+                    print("waiting for a while to allow NewConnections again...")
+                    time.sleep(5)
+                    print("trying again...")
             file.write(response.content)
             print(f"downloaded: {os.path.join(dirname,fname_ext)}")
         df = []
         new_fname = fname_ext + ''
-        if ".gz" in extension:
-            df = pd.read_csv(os.path.join(dirname,fname_ext), compression="gzip", index_col=0)
-            new_fname = new_fname[:new_fname.find(".gz")]
-        else:
-            df = pd.read_csv(os.path.join(dirname,fname_ext),index_col=0)
+        try:
+            if ".gz" in extension:
+                df = pd.read_csv(os.path.join(dirname,fname_ext), compression="gzip", index_col=0)
+                new_fname = new_fname[:new_fname.find(".gz")]
+            else:
+                df = pd.read_csv(os.path.join(dirname,fname_ext),index_col=0)
+        except:
+            print(f"exception occured while parsing {os.path.join(dirname,fname_ext)}. Skipping this file for now.")
+            continue
             
         #delete the large file to allow for saving the filtered one at the same location
         if os.path.exists(os.path.join(dirname,fname_ext)):

@@ -1,5 +1,7 @@
+import os
 #data paths
 AIRBNB_DATA_DIR = './AirbnbData/'
+AIRBNB_LISTINGS_DATA_DIR = os.path.join(AIRBNB_DATA_DIR,'Airbnb_Listings_Gz')
 COVID19_COUNTRY_PATH = "./COVID-19Data/worldwide_history.csv"
 COVID19_STATE_PATH = "./COVID-19Data/us_all_states_history.csv"
 COVID19_CITY_PATH = "./COVID-19Data/california_statewide_cases.csv"
@@ -44,3 +46,63 @@ country_to_city = {"Germany": "Munich",
                    "Mexico": "Mexico City",
                    "Brazil": "Rio de Janeiro",
                    "Argentina": "Buenos Aires"}
+
+#Thanks to https://gist.github.com/rogerallen/1583593
+us_stateto_abbrev = {'Alabama': 'al',
+ 'Alaska': 'ak',
+ 'American Samoa': 'as',
+ 'Arizona': 'az',
+ 'Arkansas': 'ar',
+ 'California': 'ca',
+ 'Colorado': 'co',
+ 'Connecticut': 'ct',
+ 'Delaware': 'de',
+ 'District of Columbia': 'dc',
+ 'Florida': 'fl',
+ 'Georgia': 'ga',
+ 'Guam': 'gu',
+ 'Hawaii': 'hi',
+ 'Idaho': 'id',
+ 'Illinois': 'il',
+ 'Indiana': 'in',
+ 'Iowa': 'ia',
+ 'Kansas': 'ks',
+ 'Kentucky': 'ky',
+ 'Louisiana': 'la',
+ 'Maine': 'me',
+ 'Maryland': 'md',
+ 'Massachusetts': 'ma',
+ 'Michigan': 'mi',
+ 'Minnesota': 'mn',
+ 'Mississippi': 'ms',
+ 'Missouri': 'mo',
+ 'Montana': 'mt',
+ 'Nebraska': 'ne',
+ 'Nevada': 'nv',
+ 'New Hampshire': 'nh',
+ 'New Jersey': 'nj',
+ 'New Mexico': 'nm',
+ 'New York': 'ny',
+ 'North Carolina': 'nc',
+ 'North Dakota': 'nd',
+ 'Northern Mariana Islands': 'mp',
+ 'Ohio': 'oh',
+ 'Oklahoma': 'ok',
+ 'Oregon': 'or',
+ 'Pennsylvania': 'pa',
+ 'Puerto Rico': 'pr',
+ 'Rhode Island': 'ri',
+ 'South Carolina': 'sc',
+ 'South Dakota': 'sd',
+ 'Tennessee': 'tn',
+ 'Texas': 'tx',
+ 'Utah': 'ut',
+ 'Vermont': 'vt',
+ 'Virgin Islands': 'vi',
+ 'Virginia': 'va',
+ 'Washington': 'wa',
+ 'West Virginia': 'wv',
+ 'Wisconsin': 'wi',
+ 'Wyoming': 'wy'}
+
+abbrevto_us_state = dict(map(reversed, us_stateto_abbrev.items()))
