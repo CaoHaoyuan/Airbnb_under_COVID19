@@ -25,7 +25,7 @@ def main(args):
     # future.tail()
     prediction = m.predict(future)
 #     print('prediction', prediction)   
-    prediction.to_csv("prediction_data.csv")
+    prediction.to_csv("./csv_result/{city}_prediction_data.csv")
 
     
     df = df[["date","size"]]
@@ -35,7 +35,7 @@ def main(args):
     future = m.make_future_dataframe(periods=0, freq='MS')
     # future.tail()
     prediction = m.predict(future)
-    prediction.to_csv("real_data.csv")
+    prediction.to_csv("./csv_result/{city}_real_data.csv")
     
     
     
