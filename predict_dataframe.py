@@ -7,10 +7,28 @@ import airbnb_dataset as ad
 from fbprophet import Prophet
 import argparse
 
+country_to_city = {"Germany": "Munich",
+                   "Spain": "Madrid",
+                   "Greece": "Athens",
+                   "Sweden": "Stockholm",
+                   "United Kingdom": "Edinburgh",
+                   "China": "Shanghai",
+                   "Singapore": "Singapore",
+                   "Japan": "Tokyo",
+                   "South Africa": "Cape Town",
+                   "Australia": "Sydney",
+                   "Canada": "Ottawa",
+                   "United States": "Washington D.C.",
+                   "Mexico": "Mexico City",
+                   "Brazil": "Rio de Janeiro",
+                   "Argentina": "Buenos Aires"}
+
 def main(args):
     AD = ad.AirbnbDataset()
     city = args.filename
-    df = AD.get_reviews_for_city(city, per_month = True, per_week = False)
+    country = list(country_to_city.keys())[list (country_to_city.values()).index (city)]
+#     df = AD.get_reviews_for_city(city, per_month = True, per_week = False)
+    df = AD.get_reviews_for_country(country, per_month = True, per_week = False)
     df = df.reset_index(drop = False)
     df['index'] = df.index
     df['date'] = df['year'].map(str) + '-' + df['month'].map(str) + '-1'
@@ -25,7 +43,7 @@ def main(args):
     # future.tail()
     prediction = m.predict(future)
 #     print('prediction', prediction)   
-    prediction.to_csv(f"./csv_result/{city}_prediction_data.csv")
+    prediction.to_csv(f"./csv_result_country/{country}_prediction_data.csv")
 
     
     df = df[["date","size"]]
@@ -35,7 +53,7 @@ def main(args):
     future = m.make_future_dataframe(periods=0, freq='MS')
     # future.tail()
     prediction = m.predict(future)
-    prediction.to_csv(f"./csv_result/{city}_real_data.csv")
+    prediction.to_csv(f"./csv_result_country/{country}_real_data.csv")
     
     
     
