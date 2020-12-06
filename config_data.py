@@ -30,7 +30,7 @@ US_state_to_city = {"North Carolina":["Asheville"],
                     "Minnesota":["Twin Cities MSA"],
                     "District of Columbia":["Washington D.C."]}
 
-misc_cities = ["Beijing"]
+misc_cities = ["Beijing","Milan"]
 
 # mapping country to representative city
 country_to_city = {"Germany": "Munich",
