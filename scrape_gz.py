@@ -14,7 +14,10 @@ import pandas as pd
 import time
 import config_data
 #where the filtered CSV files will be stored
-TARGET_DIR = config_data.AIRBNB_LISTINGS_DATA_DIR	
+TARGET_DIR = os.path.join(config_data.AIRBNB_DATA_DIR,"GzWithPrice")
+if not os.path.exists(TARGET_DIR):
+    os.makedirs(TARGET_DIR)
+CITY_LIST = config_data.misc_cities
 
 if not os.path.isdir(TARGET_DIR):
     os.makedirs(TARGET_DIR)
@@ -53,42 +56,49 @@ for link in get_soup(URL).find_all('a'):
             #the filtered file exists, skip this iteration completely and move to next file
             print(f"Skipped {os.path.join(dirname,fname)}.csv. It already exists")
             continue
-        #download the large file
-        with open(os.path.join(dirname,fname_ext), 'wb') as file:
-            while True:
-                try:
-                    print("trying to establish a connection with the source..")
-                    response = requests.get(file_link)
-                    break
-                except:
-                    print("waiting for a while to allow NewConnections again...")
-                    time.sleep(5)
-                    print("trying again...")
-            file.write(response.content)
-            print(f"downloaded: {os.path.join(dirname,fname_ext)}")
-        df = []
-        new_fname = fname_ext + ''
-        try:
-            if ".gz" in extension:
-                df = pd.read_csv(os.path.join(dirname,fname_ext), compression="gzip", index_col=0)
-                new_fname = new_fname[:new_fname.find(".gz")]
-            else:
-                df = pd.read_csv(os.path.join(dirname,fname_ext),index_col=0)
-        except:
-            print(f"exception occured while parsing {os.path.join(dirname,fname_ext)}. Skipping this file for now.")
-            continue
+        to_download = False
+        for name in CITY_LIST:
+            name_lower = name.lower().replace(" ","").replace(".","")
+            if name_lower in file_link:
+                to_download = True
+        if to_download:
+            print("Downloading")
+            #download the large file
+            with open(os.path.join(dirname,fname_ext), 'wb') as file:
+                while True:
+                    try:
+                        print("trying to establish a connection with the source..")
+                        response = requests.get(file_link)
+                        break
+                    except:
+                        print("waiting for a while to allow NewConnections again...")
+                        time.sleep(5)
+                        print("trying again...")
+                file.write(response.content)
+                print(f"downloaded: {os.path.join(dirname,fname_ext)}")
+            df = []
+            new_fname = fname_ext + ''
+            try:
+                if ".gz" in extension:
+                    df = pd.read_csv(os.path.join(dirname,fname_ext), compression="gzip", index_col=0)
+                    new_fname = new_fname[:new_fname.find(".gz")]
+                else:
+                    df = pd.read_csv(os.path.join(dirname,fname_ext),index_col=0)
+            except:
+                print(f"exception occured while parsing {os.path.join(dirname,fname_ext)}. Skipping this file for now.")
+                continue
+                
+            #delete the large file to allow for saving the filtered one at the same location
+            if os.path.exists(os.path.join(dirname,fname_ext)):
+                os.remove(os.path.join(dirname,fname_ext))
+            #select the columns of interest that are actually in the CSV columns
+            cols = []
+            #handle missing columns
+            for c in COLUMNS_OF_INTEREST:
+                if c in df.columns:
+                    cols.append(c)
+            df = df[cols]
+            #write out the df with columns of interest as .CSV to same location with same name
+            df.to_csv(os.path.join(dirname,new_fname))
+            print(f"Filtered CSV written out to {os.path.join(dirname,new_fname)}")
             
-        #delete the large file to allow for saving the filtered one at the same location
-        if os.path.exists(os.path.join(dirname,fname_ext)):
-            os.remove(os.path.join(dirname,fname_ext))
-        #select the columns of interest that are actually in the CSV columns
-        cols = []
-        #handle missing columns
-        for c in COLUMNS_OF_INTEREST:
-            if c in df.columns:
-                cols.append(c)
-        df = df[cols]
-        #write out the df with columns of interest as .CSV to same location with same name
-        df.to_csv(os.path.join(dirname,new_fname))
-        print(f"Filtered CSV written out to {os.path.join(dirname,new_fname)}")
-        
