@@ -30,7 +30,7 @@ Please check the Data User Manual.ipynb for details.
         - create_csv_for$DatasetName$.py : Create Namelist for dataset
         - proprcessing.py
     
-    -- config_data.py : Map for country and city
+    - config_data.py : Map for country and city
     - Data User Manual.ipynb  : Demo of how to use the dataset API
     - predict.ipynb : Demo of prediction
     - scrape_insideairbnb.py : scraping script for airbnbdata, refactored data classes
