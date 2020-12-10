@@ -24,7 +24,15 @@ class AirbnbDataset:
         self.countries = list(self.country_to_city_map.keys())
         self.global_cities = [self.country_to_city_map[_] for _ in self.countries]
         self.city_to_country_map = dict(zip(self.global_cities, self.countries))
-
+        self.allcities = []
+        
+        for v in config_data.US_state_to_city.values():
+            for t in v:
+                self.allcities.append(t)
+        for v in config_data.country_to_city.values():
+            self.allcities.append(v)
+        for v in config_data.misc_cities:
+            self.allcities.append(v)
 
     ################## helper functions ################
     def get_num_us_states(self):
@@ -52,7 +60,7 @@ class AirbnbDataset:
         :param city: string
         :return: pd.dataframe, size = number of months * 3
         """
-        assert isinstance(city, str)
+        assert(isinstance(city, str) and city in self.allcities)
         assert not (per_month and per_week)
         assert per_month or per_week
 
@@ -92,6 +100,9 @@ class AirbnbDataset:
         Value is computed by summing all cities reviews in this state.
         """
         assert isinstance(cities, list) and len(cities) >= 1 and isinstance(cities[0], str)
+        for c in cities:
+            assert c in self.allcities
+            
         assert not (per_month and per_week)
         assert per_month or per_week
 
@@ -125,3 +136,79 @@ class AirbnbDataset:
         assert per_month or per_week
 
         return self.get_reviews_for_city(self.country_to_city_map[country], per_month, per_week)
+    
+    def get_listings_for_city(self, city, per_month = True):
+        """
+        Get historical number of unique listings per month/year for the city specified. All months/years with data available will be returned.
+
+        The result returned by this function would indicate the level of availability of the city to tourism.
+        :param city: string
+        :return: pd.dataframe, size = number of months * 1
+        """
+        assert(isinstance(city, str) and city in self.allcities)
+
+        if city in self.us_cities:
+            print(f"City {city} is in country United States .")
+        elif city in self.global_cities:
+            print(f"City {city} is in country {self.city_to_country_map[city]}")
+        
+        listing_file_path = os.path.join(config_data.AIRBNB_DATA_DIR,f"{city}/listings.csv")
+        assert(os.path.isfile(listing_file_path)),f"file not found at {review_file_path}!"
+        
+        df = pd.read_csv(listing_file_path)
+        if df.columns[0] == "date" and df.columns[1] =="n_listings":
+            pass
+        else:
+            print(f"{listing_file_path} is not the correct file. Please double check. ")
+
+        # preprocess the reviews
+        df.date = pd.to_datetime(df.date)
+        df['month'] = df.date.dt.month
+        df['year'] = df.date.dt.year
+        df['week'] = df.date.dt.isocalendar().week
+
+#         if per_month:
+#             num_listings = df
+#         else:
+#             num_listings = df.groupby([lambda x: x.year]).agg([sum])
+        num_listings = df.set_index(["date"])
+        num_listings = num_listings.sort_index()
+        return num_listings
+    
+    def get_total_listings_for_cities(self, cities, per_month=True):
+        """
+        Get total historical reviews per month(week) for the cities specified. All months with date available (for all cities in this state) will be returned.
+        Value is computed by summing all cities reviews in this state.
+        """
+        assert isinstance(cities, list) and len(cities) >= 1 and isinstance(cities[0], str)
+        for c in cities:
+            assert c in self.allcities
+            
+        num_listings = self.get_listings_for_city(cities[0], per_month)
+        for city in cities[1:]:
+            df = self.get_listings_for_city(city, per_month)
+#             num_listings = num_listings.add(df,fill_value =0)
+            num_listings = pd.merge(num_listings, df, on=["date","year", "month", "week"])
+            num_listings["n_listings"] = num_listings["n_listings_x"]+num_listings["n_listings_y"]
+            num_listings = num_listings.drop(["n_listings_x","n_listings_y"], axis=1)
+            num_listings = num_listings.set_index(["date"])
+        num_listings = num_listings.sort_index()
+        return num_listings
+
+    def get_listings_for_us_state(self, state, per_month=True):
+        """
+        Get historical reviews per month(week) for the United States specified.
+
+        Simply use the get_total_reviews_per_month_for_cities() function.
+        """
+        assert isinstance(state, str) and state in self.us_states
+        
+        return self.get_total_listings_for_cities(self.us_state_city_mapper[state], per_month)
+
+    def get_listings_for_country(self, country, per_month=True):
+        """
+        Get historical reviews per month(week) for the country. The representative city's data will be returned.
+        """
+        assert isinstance(country, str) and country in self.countries
+
+        return self.get_listings_for_city(self.country_to_city_map[country], per_month)
