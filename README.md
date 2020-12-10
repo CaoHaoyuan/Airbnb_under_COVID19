@@ -34,6 +34,7 @@ Please check the Data User Manual.ipynb for details.
     - csv_result_country : Results in CSV files of different countries
         - Australia_prediction_data.csv
         - Australia_real_data.csv
+        ...
     
     
     - config_data.py : Map for country and city
