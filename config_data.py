@@ -1,5 +1,7 @@
+import os
 #data paths
 AIRBNB_DATA_DIR = './AirbnbData/'
+AIRBNB_LISTINGS_DATA_DIR = os.path.join(AIRBNB_DATA_DIR,'Listings')
 COVID19_COUNTRY_PATH = "./COVID-19Data/worldwide_history.csv"
 COVID19_STATE_PATH = "./COVID-19Data/us_all_states_history.csv"
 COVID19_CITY_PATH = "./COVID-19Data/california_statewide_cases.csv"
@@ -27,6 +29,8 @@ US_state_to_city = {"North Carolina":["Asheville"],
                     "Washington":["Seattle"],
                     "Minnesota":["Twin Cities MSA"],
                     "District of Columbia":["Washington D.C."]}
+
+misc_cities = ["Beijing","Milan"]
 
 # mapping country to representative city
 country_to_city = {"Germany": "Munich",
