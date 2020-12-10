@@ -74,6 +74,7 @@ class AirbnbDataset:
             print(f"{review_file_path} is not the correct file. Please double check. ")
 
         # preprocess the reviews
+           
         df.date = pd.to_datetime(df.date)
         df['month'] = df.date.dt.month
         df['year'] = df.date.dt.year
@@ -83,8 +84,7 @@ class AirbnbDataset:
             num_reviews = df.groupby(['year', 'month']).size().to_frame('size')
         else:
             num_reviews = df.groupby(['year', 'week']).size().to_frame('size')
-
-        return num_reviews
+        return num_reviews, df['date']
 
     def get_total_reviews_for_cities(self, cities, per_month=True, per_week=False):
         """

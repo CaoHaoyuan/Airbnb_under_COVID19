@@ -3,10 +3,14 @@ ECE 143 project in UCSD.
 
 ## Requirments
 
+<<<<<<< HEAD
 - Pandas 1.15
 - matplotlib
 - fbprophet
 - numpy
+=======
+pandas 1.15
+>>>>>>> master
 
 
 ## Data loader
