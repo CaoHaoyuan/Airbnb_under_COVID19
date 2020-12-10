@@ -28,7 +28,3 @@ Please check the Data User Manual.ipynb for details.
     - Data User Manual.ipynb  : Demo of how to use the dataset API
     - predict.ipynb : Demo of prediction
     - scrape_insideairbnb.py : scraping script for airbnbdata, refactored data classes
-
-
-
-## File organization
