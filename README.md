@@ -33,5 +33,15 @@ Please check the Data User Manual.ipynb for details.
     - predict_dataframe.py : script for save prediction as csv files 
     - main.sh : bash file for get all the prediction results
     - get_difference.sh : bash file for get all the difference of prediction with the real value
-    
+```
+
 ## Usage
+1. Get the prediction result
+```
+     bash main.sh
+```
+    
+2. Get the difference between the prediction and the real data
+```
+     bash get_difference.sh
+    ```
