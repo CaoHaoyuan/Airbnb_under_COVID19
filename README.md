@@ -27,4 +27,11 @@ Please check the Data User Manual.ipynb for details.
     - config_data.py : Map for country and city
     - Data User Manual.ipynb  : Demo of how to use the dataset API
     - predict.ipynb : Demo of prediction
+    - heatmap.ipynb : Demo of heatmap
     - scrape_insideairbnb.py : scraping script for airbnbdata, refactored data classes
+    - predict.py : script for figure prediction
+    - predict_dataframe.py : script for save prediction as csv files 
+    - main.sh : bash file for get all the prediction results
+    - get_difference.sh : bash file for get all the difference of prediction with the real value
+    
+## Usage
