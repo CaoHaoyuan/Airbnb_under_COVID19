@@ -23,7 +23,19 @@ Please check the Data User Manual.ipynb for details.
         - california_statewide_cases.csv
         - us_all_states_history.csv
         - worldwide_history.csv
-        
+    
+    - prediction_result : Results plots
+    
+    - csv_result : Results in CSV files of different cities
+        - Asheville_prediction_data.csv
+        - Asheville_real_data.csv
+        ...
+    
+    - csv_result_country : Results in CSV files of different countries
+        - Australia_prediction_data.csv
+        - Australia_real_data.csv
+    
+    
     - config_data.py : Map for country and city
     - Data User Manual.ipynb  : Demo of how to use the dataset API
     - predict.ipynb : Demo of prediction
