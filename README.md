@@ -8,6 +8,11 @@ ECE 143 project in UCSD.
 - fbprophet
 - numpy
 
+visualization requirements
+- colorcet
+- holoview
+- plotly
+
 
 ## Data loader
 Please check the Data User Manual.ipynb for details.
